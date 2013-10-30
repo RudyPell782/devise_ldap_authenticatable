@@ -14,6 +14,10 @@ module Devise
         @ldap.port = ldap_config["port"]
         @ldap.base = ldap_config["base"]
         @attribute = ldap_config["attribute"]
+        #@ldap.host = ldap_config["host"]
+        #@ldap.port = ldap_config["port"]
+        #@ldap.base = ldap_config["base"]
+        #@attribute = ldap_config["attribute"]
         @ldap_auth_username_builder = params[:ldap_auth_username_builder]
 
         @group_base = ldap_config["group_base"]
@@ -37,12 +41,14 @@ module Devise
       end
 
       def dn
-        DeviseLdapAuthenticatable::Logger.send("LDAP dn lookup: #{@attribute}=#{@login}")
+        DeviseLdapAuthenticatable::Logger.send("LDAP dn lookup: #{@attribute}=#{@login}  #{password}")
         ldap_entry = search_for_login
         if ldap_entry.nil?
           @ldap_auth_username_builder.call(@attribute,@login,@ldap)
+          DeviseLdapAuthenticatable::Logger.send("LDAP entry nil: #{@attribute}=#{@login}  #{password} #{@ldap}")
         else
           ldap_entry.dn
+          DeviseLdapAuthenticatable::Logger.send("LDAP dn not nil: #{@attribute}=#{@login}  #{password} #{@ldap}")
         end
       end
 
@@ -179,7 +185,7 @@ module Devise
         ldap_entry = nil
         match_count = 0
         @ldap.search(:filter => filter) {|entry| ldap_entry = entry; match_count+=1}
-        DeviseLdapAuthenticatable::Logger.send("LDAP search yielded #{match_count} matches")
+        DeviseLdapAuthenticatable::Logger.send("LDAP search yielded #{match_count} matches. ldap_entry = #{ldap_entry}")
         ldap_entry
       end
 
